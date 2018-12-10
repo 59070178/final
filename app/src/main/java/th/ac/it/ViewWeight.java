@@ -44,6 +44,7 @@ public class ViewWeight extends Fragment {
             (@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+
         listView = getView().findViewById(R.id.list);
         viewAdapter = new ViewAdapter(getActivity(), R.layout.weight_item, arrayList);
 
@@ -52,6 +53,8 @@ public class ViewWeight extends Fragment {
 
 
         //create table if not exist
+
+//        database.execSQL("drop table if exists orders");
         database.execSQL(
                 "CREATE TABLE IF NOT EXISTS db (_id INTEGER PRIMARY KEY AUTOINCREMENT, date VARCHAR(5), weight VARCHAR(3))"
         );

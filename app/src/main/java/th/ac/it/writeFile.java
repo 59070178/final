@@ -1,37 +1,35 @@
 package th.ac.it;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
+import android.content.Context;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
 
 public class writeFile extends Fragment {
 
-     String fileName = "data.txt";
-    String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/readwrite";
+    EditText text;
+    Button button;
 
 
     public View onCreateView
             (@NonNull LayoutInflater inflater,
              @Nullable ViewGroup container,
              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.first, container, false);
+        return inflater.inflate(R.layout.write, container, false);
     }
 
     @Override
@@ -40,152 +38,64 @@ public class writeFile extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
 
-
-        File dir = new File(path);
-        dir.mkdir();
-
-
-
-        write();
-        view();
+        save();
     }
 
-
-
-    void write() {
-
-        Button b = getView().findViewById(R.id.b);
-        b.setOnClickListener(new View.OnClickListener() {
+    void save(){
+        text = getView().findViewById(R.id.name);
+        button = getView().findViewById(R.id.save);
+        button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EditText name = (EditText) getView().findViewById(R.id.name);
-//                EditText nick = (EditText) getView().findViewById(R.id.nick);
-//                EditText age = (EditText) getView().findViewById(R.id.age);
-
-
-                String nameSt = name.getText().toString();
-//                String nickSt = nick.getText().toString();
-//                String ageSt = age.getText().toString();
-
-//                File file = new File(path+fileName);
-
-                try {
-//                    String path2 = Environment.getExternalStorageState();
-                    File file=null;
-
-                    File folder = new File(Environment.getExternalStoragePublicDirectory(
-                            Environment.DIRECTORY_DOWNLOADS)+"/Email_Client/");
-                    folder.mkdirs();
-
-
-                    file=new File(folder,fileName);
-                    //Automatically creates the new empty file specified by the name,   if it is not exist.
-                    file.createNewFile();
-
-
-                    String[] saveText = String.valueOf(name.getText()).split(System.getProperty("line.separator"));
-                    name.setText("");
-
-//                    Save (file,saveText);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-
-
+                writeToFile(readFromFile(getContext()) + text.getText().toString(), getContext());
+                getActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.main_view, new ReadFile())
+                        .addToBackStack(null)
+                        .commit();
             }
         });
     }
 
-    void view(){
-        Button v = getView().findViewById(R.id.view);
-        v.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                TextView tv = getView().findViewById(R.id.view);
-
-                File file = new File(path+fileName);
-                String [] load = Load(file);
-
-                String str = "";
-
-                for (int i = 0;i<load.length ; i++){
-                    str += load[i] + System.getProperty("line.separator");
-                }
-
-                tv.setText(str);
-            }
-        });
+    private void writeToFile(String data,Context context) {
+        try {
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput("config.txt", Context.MODE_PRIVATE));
+            outputStreamWriter.write(data);
+            outputStreamWriter.close();
+        }
+        catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
     }
 
-    public static String[] Load(File file){
+    private String readFromFile(Context context) {
 
-        FileInputStream fis = null;
-        int ar = 0;
-        String test;
-        try {
-            fis = new FileInputStream(file);
-        }catch (FileNotFoundException e){
-            e.printStackTrace();
-        }
-
-        InputStreamReader isr = new InputStreamReader(fis);
-        BufferedReader br = new BufferedReader(isr);
+        String ret = "";
 
         try {
-            while ((test = br.readLine()) != null)
-            {
-                ar ++;
-            }
-        }catch (IOException e){
-            e.printStackTrace();
-        }
+            InputStream inputStream = context.openFileInput("config.txt");
 
-        try {
-            fis.getChannel().position(0);
-        }catch (IOException e){
-            e.printStackTrace();
-        }
+            if ( inputStream != null ) {
+                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                String receiveString = "";
+                StringBuilder stringBuilder = new StringBuilder();
 
-
-        String[] array = new String[ar];
-
-        String line;
-        int i = 0;
-
-        try {
-            while ((line=br.readLine()) != null){
-                array[i] = line;
-                i++;
-            }
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-
-
-        return array;
-
-    }
-
-    public static void Save(File file,String[] data){
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(file);
-
-            for (int i = 0 ; i<data.length ; i++){
-                fos.write(data[i].getBytes());
-
-                if (i < data.length-1){
-                    fos.write("\n".getBytes());
-
+                while ( (receiveString = bufferedReader.readLine()) != null ) {
+                    stringBuilder.append(receiveString).append("\n");
                 }
 
-                fos.close();
+                inputStream.close();
+                ret = stringBuilder.toString();
             }
-        }catch (FileNotFoundException e){
-            e.printStackTrace();
+        }
+        catch (FileNotFoundException e) {
+            Log.e("login activity", "File not found: " + e.toString());
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e("login activity", "Can not read file: " + e.toString());
         }
+
+        return ret;
     }
+
 }

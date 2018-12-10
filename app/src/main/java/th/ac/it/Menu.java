@@ -31,7 +31,8 @@ public class Menu extends Fragment {
 
         _menu.add("Add");
         _menu.add("View");
-        _menu.add("Theme");
+        _menu.add("Write");
+        _menu.add("Image");
 
 
         final ArrayAdapter<String> _menuAdapter = new ArrayAdapter<>(
@@ -56,10 +57,6 @@ public class Menu extends Fragment {
                             .addToBackStack(null)
                             .commit();
 
-                    Log.d("USER", "GOTO BMI");
-                    Toast.makeText
-                            (getContext(),"GO TO BMI",Toast.LENGTH_SHORT)
-                            .show();
 
                 }else if (_menu.get(i).equals("View")){
 
@@ -75,18 +72,23 @@ public class Menu extends Fragment {
                             (getContext(),"GO TO MENU",Toast.LENGTH_SHORT)
                             .show();
                 }
-                else if (_menu.get(i).equals("Theme")){
+                else if (_menu.get(i).equals("Write")){
                     _menu.clear();
                     getActivity().getSupportFragmentManager()
                             .beginTransaction()
-                            .replace(R.id.main_view, new Theme())
+                            .replace(R.id.main_view, new writeFile())
                             .addToBackStack(null)
                             .commit();
 
-                    Log.d("USER", "GOTO Add Sleep");
-                    Toast.makeText
-                            (getContext(),"GOTO Add Sleep",Toast.LENGTH_SHORT)
-                            .show();
+
+                }
+                else if (_menu.get(i).equals("Image")){
+                    _menu.clear();
+                    getActivity().getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.main_view, new ImageWithLink())
+                            .addToBackStack(null)
+                            .commit();
                 }
 
             }
